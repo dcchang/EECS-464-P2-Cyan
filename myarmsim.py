@@ -6,6 +6,7 @@ Created on Wed Apr  1 14:23:10 2020
 @author: shrevzen
 """
 
+#Added so you can run script from anywhere
 import sys
 import os
 if 'pyckbot/hrb/' not in sys.path:
