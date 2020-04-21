@@ -27,7 +27,7 @@ class MyArmSim(ArmAnimatorApp):
       ### Student team selection -- transform from workspace coordinates to world
       ###
       Tws2w = asarray([
-           [1,0,0,  0],
+           [1,0,0, -6],
            [0,1,0, -5],
            [0,0,1,-10],
            [0,0,0,  1]
@@ -40,7 +40,7 @@ class MyArmSim(ArmAnimatorApp):
         [0,1,0,5,1.57],
         [0,1,0,5,0],
       ]).T
-        
+
         #arm he gave that removes pendulum motion
 #      armSpec = asarray([
 #        [0, 1,0, 3, 1.57],
@@ -67,7 +67,7 @@ class MyArmSim(ArmAnimatorApp):
             fvp.plot3D(*point,marker='o',color='b')
           else:
             fvp.plot3D(*point,marker='o',color='g')
-            
+
       return ArmAnimatorApp.show(self,fvp)
 
     def onStart(self):
