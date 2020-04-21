@@ -13,11 +13,13 @@ if 'pyckbot/hrb/' not in sys.path:
     sys.path.append(os.path.expanduser('~/pyckbot/hrb/'))
 
 from numpy import asarray, dot
+from numpy.linalg import inv
 from p2sim import ArmAnimatorApp
 from arm import Arm
 from joy.decl import *
 from joy import progress
-from move import Move
+from move2 import Move
+
 
 class MyArmSim(ArmAnimatorApp):
     def __init__(self,Tp2ws,**kw):
@@ -38,9 +40,18 @@ class MyArmSim(ArmAnimatorApp):
         [0,1,0,5,1.57],
         [0,1,0,5,0],
       ]).T
+        
+        #arm he gave that removes pendulum motion
+#      armSpec = asarray([
+#        [0, 1,0, 3, 1.57],
+#        [0, 1,0, 3, 0],
+#        [0, 1,0, 3, 0],
+#        ]).T
+      self.Tws2w = Tws2w
+      self.Tw2ws = inv(self.Tws2w)
       self.armSpec = armSpec
       ArmAnimatorApp.__init__(self,armSpec,Tws2w,Tp2ws,
-        simTimeStep=0.1, # Real time that corresponds to simulation time of 0.1 sec
+        simTimeStep=0.25, # Real time that corresponds to simulation time of 0.1 sec
         **kw
       )
       self.idealArm = Arm(armSpec)  #create instance of arm class without real-life properties
@@ -56,7 +67,7 @@ class MyArmSim(ArmAnimatorApp):
             fvp.plot3D(*point,marker='o',color='b')
           else:
             fvp.plot3D(*point,marker='o',color='g')
-
+            
       return ArmAnimatorApp.show(self,fvp)
 
     def onStart(self):
@@ -85,31 +96,6 @@ class MyArmSim(ArmAnimatorApp):
 
       #Convert all coordinates for square to world coordinates
       self.square_w = dot(square_p, self.Tp2w.T)
-
-      #Step 2: move arm to first corner
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
-#      angCurrent = asarray(angCurrent)*100*180/3.1415
-#      angGoal = asarray(angGoal)*100*180/3.1415
-#      steps = linspace(angCurrent,angGoal,1)  #a bunch of intermediate angles between current and desired position in centidegrees
-#      print(steps)
-#      for step in steps:
-#
-
-      #Step 3: Move to each corner by moving to all points in between corners
-
 
     def onEvent(self,evt):
       ###
