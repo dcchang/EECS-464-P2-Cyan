@@ -140,6 +140,6 @@ if __name__=="__main__":
      ## Uncomment the next line (cfg=...) to save video frames;
      ## you can use the frameViewer.py program to view those
      ## frames in real time (they will not display locally)
-#      cfg=dict(logVideo="f%04d.png")
+     # cfg=dict(logVideo="f%04d.png")
     )
   app.run()
