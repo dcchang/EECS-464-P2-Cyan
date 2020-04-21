@@ -34,25 +34,29 @@ class MyArmSim(ArmAnimatorApp):
       ### Arm specification
       ###
       armSpec = asarray([
-        [0,0.02,1,5,2*3.1415],
-        [0,1,0,5,1.57+2*3.1415],
-        [0,1,0,5,2*3.1415],
+        [0,0.02,1,5,0],
+        [0,1,0,5,1.57],
+        [0,1,0,5,0],
       ]).T
+      self.armSpec = armSpec
       ArmAnimatorApp.__init__(self,armSpec,Tws2w,Tp2ws,
-        simTimeStep=0.25, # Real time that corresponds to simulation time of 0.1 sec
+        simTimeStep=0.1, # Real time that corresponds to simulation time of 0.1 sec
         **kw
       )
       self.idealArm = Arm(armSpec)  #create instance of arm class without real-life properties
       self.move = Move(self)     #move plan
-      
+
     def show(self,fvp):
       fvp.plot3D([0],[0],[0],'^k',ms=10) # Plot black triangle at origin
       for point in self.square_w:
           fvp.plot3D(*point[:-1],marker='o',color='r')
-      
-      for point in self.move.steps:
-          fvp.plot3D(*point,marker='o',color='g')
-      
+
+      for i,point in enumerate(self.move.steps):
+          if self.currStep and self.currStep == i:
+            fvp.plot3D(*point,marker='o',color='b')
+          else:
+            fvp.plot3D(*point,marker='o',color='g')
+
       return ArmAnimatorApp.show(self,fvp)
 
     def onStart(self):
@@ -62,11 +66,11 @@ class MyArmSim(ArmAnimatorApp):
 #       [  0.    ,   1.    ,   0.    ,  -5.    ],
 #       [  0.7071,   0.    ,   0.7071, -10.    ],
 #       [  0.    ,   0.    ,   0.    ,   1.    ]])
-#      
+#
       ###
       ### TEAM CODE GOES HERE
       ###
-      
+
       #Step 1: Get center of square in paper coordinates and convert to world coordinates
       #(x,y,s) - x target, y target, scale
       #Do you have to define a z component for the square? And add a column of 1's?
@@ -77,35 +81,35 @@ class MyArmSim(ArmAnimatorApp):
                   [x+0.5*s, y+0.5*s, 0, 1],     #uper right
                   [x+0.5*s, y-0.5*s, 0, 1],     #bottom right
                   [x-0.5*s, y-0.5*s, 0, 1]      #bottom left
-                  ])     
-     
+                  ])
+
       #Convert all coordinates for square to world coordinates
       self.square_w = dot(square_p, self.Tp2w.T)
-      
-      #Step 2: move arm to first corner
-     
- 
-      
-     
 
-      
-      
-      
-      
-      
-      
-     
-          
-#            
+      #Step 2: move arm to first corner
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
 #      angCurrent = asarray(angCurrent)*100*180/3.1415
 #      angGoal = asarray(angGoal)*100*180/3.1415
 #      steps = linspace(angCurrent,angGoal,1)  #a bunch of intermediate angles between current and desired position in centidegrees
 #      print(steps)
 #      for step in steps:
-#          
-      
+#
+
       #Step 3: Move to each corner by moving to all points in between corners
-      
+
 
     def onEvent(self,evt):
       ###
@@ -114,16 +118,16 @@ class MyArmSim(ArmAnimatorApp):
 
       if evt.type == KEYDOWN:
           progress('in keydown')
-          if evt.key == K_m:  
+          if evt.key == K_m:
               if self.move.isRunning():
                   progress('Move running!')
                   return
               progress('Move plan started!')
               self.move.start()
-      
-      
+
+
       return ArmAnimatorApp.onEvent(self,evt)
-  
+
 if __name__=="__main__":
   # Transform of paper coordinates to workspace
   Tp2ws = asarray([
