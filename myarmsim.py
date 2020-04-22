@@ -16,7 +16,7 @@ from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_,save,lo
 from numpy.linalg import inv 
 from p2sim import ArmAnimatorApp
 from arm import Arm
-from joy.decl import KEYDOWN,K_k,K_o,K_i
+from joy.decl import KEYDOWN,K_k,K_o
 from joy import progress
 from move import Move
 
@@ -26,7 +26,7 @@ class MyArmSim(ArmAnimatorApp):
       ### Student team selection -- transform from workspace coordinates to world
       ###
       Tws2w = asarray([
-           [1,0,0, 0],
+           [1,0,0, -6],
            [0,1,0, -5],
            [0,0,1,-10],
            [0,0,0,  1]
@@ -35,8 +35,8 @@ class MyArmSim(ArmAnimatorApp):
       ### Arm specification
       ###
       armSpec = asarray([
-        [0,0.02,1,3,0],
-        [0,1,0,5,1.57],
+        [0,0.02,1,3,-pi],
+        [0,1,0,4,1.57],
         [0,1,0,5,0],
       ]).T
 
@@ -138,9 +138,12 @@ class MyArmSim(ArmAnimatorApp):
                   return
               self.move.pos = self.square_w[p]
               self.move.start()
+              self.move.square = True
+              self.move.currentPos = self.move.pos
               progress('Move plan started!')
               return
           if evt.key == K_k:
+              self.move.prev_pos = self.move.pos
               self.move.pos = self.calib_grid[self.calib_idx]
               self.move.start()
               progress('Moving to calibration point')
@@ -156,6 +159,8 @@ class MyArmSim(ArmAnimatorApp):
                       real_ang[i] = motor.get_goal()*(pi/18000)   
                   self.calib_ang[self.calib_idx] = real_ang - self.calib_ang[self.calib_idx]
                   self.calib_idx += 1
+                  self.move.calDone = True
+                  self.move.currentPos = self.move.pos
               progress('Error calculation complete')
               if self.calib_idx == len(self.calib_ang):
                   progress('Calibration_complete!')

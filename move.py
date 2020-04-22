@@ -30,7 +30,9 @@ class Move( Plan ):
         self.moveArm.angles = self.app.armSpec[-1,:]
         self.pos = []
         self.calibrated = False
-    
+        self.prev_pos = []
+        self.CalDone = False
+        self.square = False
     #used to get initial joint angles before autonomous move
     def syncArm(self):
         ang = zeros(len(self.app.arm))
@@ -47,8 +49,10 @@ class Move( Plan ):
             angOffset = griddata(self.app.calib_grid[:,:-2],self.app.calib_ang,(self.pos[:-2]),method='linear')[0]
         print(angOffset)
 
-        self.syncArm()       
-        currentPos = self.app.idealArm.getTool(self.moveArm.angles)
+        self.syncArm()     
+        if self.CalDone == False or self.square == False:
+            self.currentPos = self.app.idealArm.getTool(self.moveArm.angles)
+        
         self.steps = linspace(currentPos,self.pos,5)[:,:-1]
         for stepCount,step in enumerate(self.steps):
             progress('Step #%d, %s' % (stepCount,str(step)))
@@ -58,3 +62,7 @@ class Move( Plan ):
                 motor.set_pos(rad2deg(self.moveArm.angles[i]+angOffset[i])*100)    #feed in angle to set_pos as centidegrees
             yield self.forDuration(4)
         progress('Move complete')
+        
+        
+        
+        
