@@ -19,7 +19,6 @@ from arm import Arm
 from joy.decl import KEYDOWN,K_k,K_o
 from joy import progress
 from move import Move
-from calibrate import Calibrate
 
 class MyArmSim(ArmAnimatorApp):
     def __init__(self,Tp2ws,**kw):
