@@ -150,7 +150,18 @@ class MyArmSim(ArmAnimatorApp):
                   progress('Calibration_complete!')
                   self.move.calibrated = True
                   return
-
+              
+           p = "asdfghjkl".find(evt.unicode)
+           if p>=0:
+               print('manual move')
+               self.arm[p].set_pos(self.arm[p].get_goal() + 180)
+               return
+           # row of 'z' in QWERTY keyboard decrements motors
+           p = "zxcvbnm,.".find(evt.unicode)
+           if p>=0:
+               print('manual move')
+               self.arm[p].set_pos(self.arm[p].get_goal() - 180)
+               return
       return ArmAnimatorApp.onEvent(self,evt)
 
 if __name__=="__main__":
