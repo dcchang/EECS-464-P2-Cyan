@@ -36,7 +36,7 @@ class MyArmSim(ArmAnimatorApp):
       ### Arm specification
       ###
       armSpec = asarray([
-        [0,0.02,1,5,0],
+        [0,0.02,1,5,3.14159],
         [0,1,0,5,1.57],
         [0,1,0,5,0],
       ]).T

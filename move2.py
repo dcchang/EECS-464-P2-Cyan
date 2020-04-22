@@ -24,22 +24,22 @@ class Move( Plan ):
         Plan.__init__(self,app,*arg,**kw)
         self.app = app
         #Initial angles for each motor of real arm
-        self.ang = self.app.armSpec[-1,:]
         self.steps = []
         self.moveArm = tinyik.Actuator(['z',[5.,0.,0.],'y',[5.,0.,0.],'y',[5.,0.,0.]])
-        self.moveArm.angles = [0,pi/2,0]
+        self.moveArm.angles = self.app.armSpec[-1,:]
         self.curr = 0
 
     def syncArm(self):
-        self.ang = zeros(len(self.app.arm))
+        ang = zeros(len(self.app.arm))
         for i,motor in enumerate(self.app.arm):
-            self.ang[i] = motor.get_goal()*(3.14159/18000.)   #convert angles to radians
+            ang[i] = motor.get_goal()*(3.14159/18000.)   #convert angles to radians
+        self.moveArm.angles = ang
 
     def behavior(self):
         progress('Move started!')
         self.syncArm()
         corner = self.app.square_w[self.curr]
-        currentPos = self.app.idealArm.getTool(self.ang)
+        currentPos = self.app.idealArm.getTool(self.moveArm.angles)
         self.steps = linspace(currentPos,corner,5)[:,:-1]
 
         #Converts steps from world to workspace
@@ -53,4 +53,4 @@ class Move( Plan ):
                 motor.set_pos(rad2deg(self.moveArm.angles[i])*100)    #feed in angle to set_pos as centidegrees
             yield self.forDuration(5)
         progress('Move complete')
-        self.curr += 1
+        self.curr = (self.curr + 1) % len(self.app.square_w)
