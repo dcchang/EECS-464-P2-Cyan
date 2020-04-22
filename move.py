@@ -33,6 +33,7 @@ class Move( Plan ):
         self.prev_pos = []
         self.CalDone = False
         self.square = False
+        self.currentPos = []
     #used to get initial joint angles before autonomous move
     def syncArm(self):
         ang = zeros(len(self.app.arm))
@@ -53,7 +54,7 @@ class Move( Plan ):
         if self.CalDone == False or self.square == False:
             self.currentPos = self.app.idealArm.getTool(self.moveArm.angles)
         
-        self.steps = linspace(currentPos,self.pos,5)[:,:-1]
+        self.steps = linspace(self.currentPos,self.pos,5)[:,:-1]
         for stepCount,step in enumerate(self.steps):
             progress('Step #%d, %s' % (stepCount,str(step)))
             self.app.currStep = stepCount
