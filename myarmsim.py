@@ -41,11 +41,11 @@ class MyArmSim(ArmAnimatorApp):
       ]).T
 
       #arm he gave that removes pendulum motion
-      armSpec = asarray([
-        [0, 1,0, 3, 1.57],
-        [0, 1,0, 3, 0],
-        [0, 1,0, 3, 0],
-      ]).T
+#      armSpec = asarray([
+#        [0, 1,0, 3, 1.57],
+#        [0, 1,0, 3, 0],
+#        [0, 1,0, 3, 0],
+#      ]).T
       self.armSpec = armSpec
       ArmAnimatorApp.__init__(self,armSpec,Tws2w,Tp2ws,
         simTimeStep=0.25, # Real time that corresponds to simulation time of 0.1 sec
