@@ -10,8 +10,9 @@ Created on Tue Apr 21 16:51:34 2020
 import tinyik
 from joy.plans import Plan
 from joy import progress
-from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_,interp
+from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_
 from numpy.linalg import pinv,inv
+from scipy.interpolate import griddata
 
 #armSpec = asarray([
 #        [0,0.02,1,5,0],
@@ -42,8 +43,10 @@ class Move( Plan ):
         angOffset = zeros(len(self.app.arm))
         if self.calibrated == True:
             #Interpolate between angle grid positions and angle error
-            angOffset = interp(self.pos, self.app.calib_grid,self.app.calib_ang)
-        progress('Move started!')
+            progress('Offset applied')
+            angOffset = griddata(self.app.calib_grid[:,:-2],self.app.calib_ang,(self.pos[:-2]),method='linear')[0]
+        print(angOffset)
+
         self.syncArm()       
         currentPos = self.app.idealArm.getTool(self.moveArm.angles)
         self.steps = linspace(currentPos,self.pos,5)[:,:-1]
@@ -53,5 +56,5 @@ class Move( Plan ):
             self.moveArm.ee = step
             for i,motor in enumerate(self.app.arm):
                 motor.set_pos(rad2deg(self.moveArm.angles[i]+angOffset[i])*100)    #feed in angle to set_pos as centidegrees
-            yield self.forDuration(3)
+            yield self.forDuration(4)
         progress('Move complete')

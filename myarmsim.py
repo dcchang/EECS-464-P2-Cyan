@@ -12,11 +12,11 @@ import os
 if 'pyckbot/hrb/' not in sys.path:
     sys.path.append(os.path.expanduser('~/pyckbot/hrb/'))
 
-from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_,interp
+from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_,save,load
 from numpy.linalg import inv 
 from p2sim import ArmAnimatorApp
 from arm import Arm
-from joy.decl import KEYDOWN,K_k,K_o
+from joy.decl import KEYDOWN,K_k,K_o,K_i
 from joy import progress
 from move import Move
 
@@ -35,7 +35,7 @@ class MyArmSim(ArmAnimatorApp):
       ### Arm specification
       ###
       armSpec = asarray([
-        [0,0.02,1,5,0],
+        [0,0.02,1,3,0],
         [0,1,0,5,1.57],
         [0,1,0,5,0],
       ]).T
@@ -93,8 +93,10 @@ class MyArmSim(ArmAnimatorApp):
       
       ##Calibration
       
-      #Create calibration grid on paper
-      nx,ny = (3,3)
+      #if calibration file exists, load calibration array in here, and skip over next part
+      #also set calibrated == true so that it calculates offset
+            #Create calibration grid on paper
+      nx,ny = (2,2)
       x = linspace(0,8,nx)
       y = linspace(0,11,ny)
       xv,yv = meshgrid(x,y,indexing='xy')
@@ -103,10 +105,24 @@ class MyArmSim(ArmAnimatorApp):
       for i in range(nx-(nx % 2)):
           idx = nx*(2*i+1)
           grid_idx[idx:idx+nx] = grid_idx[idx:idx+nx][::-1]
-          self.grid_idx = grid_idx
-          self.calib_grid = dot(grid,self.Tp2w.T)
-          self.calib_idx = 0
-          self.calib_ang = zeros((nx*ny,len(self.arm)))      
+      self.grid_idx = grid_idx
+      self.calib_grid = dot(grid,self.Tp2w.T)
+      self.calib_idx = 0
+      
+      
+      if(os.path.exists("calib_array.npy")):
+          self.calib_ang = load("calib_array.npy")
+          print(type(self.calib_ang))
+          self.move.calibrated = True
+          print(self.calib_ang[:,:-1])
+        #manual calibration matrix
+#      self.calib_ang = [[-1.54566359  0.00872665 -0.03543018]
+#                         [ 0.74228853  0.511556   -2.08479579]
+#                         [ 2.45148947 -0.61191244  2.08584299]
+#                         [-0.80826198  0.66479591 -2.20469991]]
+      
+      else:
+          self.calib_ang = zeros((nx*ny,len(self.arm)))      #This is the matrix you will want to save
 
     def onEvent(self,evt):
       ###
@@ -144,19 +160,20 @@ class MyArmSim(ArmAnimatorApp):
               if self.calib_idx == len(self.calib_ang):
                   progress('Calibration_complete!')
                   self.move.calibrated = True
+                  save("calib_array.npy",self.calib_ang)
                   return
           #manual movements
-          p = "asdfghjkl".find(evt.unicode)
+          p = "asdf".find(evt.unicode)
           if p>=0:
-            print('manual move')
-            self.arm[p].set_pos(self.arm[p].get_goal() + 180)
+            progress('manual move')
+            self.arm[p].set_pos(self.arm[p].get_goal() + 300)
             return
             # row of 'z' in QWERTY keyboard decrements motors
-            p = "zxcvbnm,.".find(evt.unicode)
-            if p>=0:
-              print('manual move')
-              self.arm[p].set_pos(self.arm[p].get_goal() - 180)
-              return
+          p = "zxcv".find(evt.unicode)
+          if p>=0:
+            progress('manual move')
+            self.arm[p].set_pos(self.arm[p].get_goal() - 300)
+            return
       return ArmAnimatorApp.onEvent(self,evt)
 
 if __name__=="__main__":
