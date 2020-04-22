@@ -40,12 +40,12 @@ class MyArmSim(ArmAnimatorApp):
         [0,1,0,5,0],
       ]).T
 
-        #arm he gave that removes pendulum motion
-#      armSpec = asarray([
-#        [0, 1,0, 3, 1.57],
-#        [0, 1,0, 3, 0],
-#        [0, 1,0, 3, 0],
-#        ]).T
+      #arm he gave that removes pendulum motion
+      armSpec = asarray([
+        [0, 1,0, 3, 1.57],
+        [0, 1,0, 3, 0],
+        [0, 1,0, 3, 0],
+      ]).T
       self.armSpec = armSpec
       ArmAnimatorApp.__init__(self,armSpec,Tws2w,Tp2ws,
         simTimeStep=0.25, # Real time that corresponds to simulation time of 0.1 sec
@@ -71,12 +71,7 @@ class MyArmSim(ArmAnimatorApp):
 
     def onStart(self):
       ArmAnimatorApp.onStart(self)
-#      Tp2w:
-#      array([[  0.7071,   0.    ,  -0.7071,   0.    ],
-#       [  0.    ,   1.    ,   0.    ,  -5.    ],
-#       [  0.7071,   0.    ,   0.7071, -10.    ],
-#       [  0.    ,   0.    ,   0.    ,   1.    ]])
-#
+
       ###
       ### TEAM CODE GOES HERE
       ###
@@ -150,18 +145,18 @@ class MyArmSim(ArmAnimatorApp):
                   progress('Calibration_complete!')
                   self.move.calibrated = True
                   return
-              
-           p = "asdfghjkl".find(evt.unicode)
-           if p>=0:
-               print('manual move')
-               self.arm[p].set_pos(self.arm[p].get_goal() + 180)
-               return
-           # row of 'z' in QWERTY keyboard decrements motors
-           p = "zxcvbnm,.".find(evt.unicode)
-           if p>=0:
-               print('manual move')
-               self.arm[p].set_pos(self.arm[p].get_goal() - 180)
-               return
+          #manual movements
+          p = "asdfghjkl".find(evt.unicode)
+          if p>=0:
+            print('manual move')
+            self.arm[p].set_pos(self.arm[p].get_goal() + 180)
+            return
+            # row of 'z' in QWERTY keyboard decrements motors
+            p = "zxcvbnm,.".find(evt.unicode)
+            if p>=0:
+              print('manual move')
+              self.arm[p].set_pos(self.arm[p].get_goal() - 180)
+              return
       return ArmAnimatorApp.onEvent(self,evt)
 
 if __name__=="__main__":
