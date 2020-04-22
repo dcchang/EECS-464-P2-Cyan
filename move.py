@@ -1,62 +1,57 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr 21 03:09:58 2020
+Created on Tue Apr 21 16:51:34 2020
 
 @author: osboxes
 """
+
+#move2
+import tinyik
 from joy.plans import Plan
 from joy import progress
-from numpy import linspace,dot,zeros
-from numpy.linalg import pinv
+from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_,interp
+from numpy.linalg import pinv,inv
 
+#armSpec = asarray([
+#        [0,0.02,1,5,0],
+#        [0,1,0,5,1.57],
+#        [0,1,0,5,0],
+#      ]).T
 
 class Move( Plan ):
     def __init__(self,app,*arg,**kw):
         Plan.__init__(self,app,*arg,**kw)
         self.app = app
         #Initial angles for each motor of real arm
-        self.ang = self.app.armSpec[-1,:]
         self.steps = []
-
+        self.moveArm = tinyik.Actuator(['z',[5.,0.,0.],'y',[5.,0.,0.],'y',[5.,0.,0.]])
+        self.moveArm.angles = self.app.armSpec[-1,:]
+        self.pos = []
+        self.calibrated = False
+    
+    #used to get initial joint angles before autonomous move
     def syncArm(self):
-        self.ang = zeros(len(self.app.arm))
+        ang = zeros(len(self.app.arm))
         for i,motor in enumerate(self.app.arm):
-            self.ang[i] = motor.get_goal()*(3.14159/18000.)   #convert angles to radians
+            ang[i] = motor.get_goal()*(3.14159/18000.)   #convert angles to radians
+        self.moveArm.angles = ang
+    
+    #for moving towwards desired position
     def behavior(self):
+        angOffset = zeros(len(self.app.arm))
+        if self.calibrated == True:
+            #Interpolate between angle grid positions and angle error
+            angOffset = interp(self.pos, self.app.calib_grid,self.app.calib_ang)
         progress('Move started!')
-        self.syncArm()
-        corner = self.app.square_w[0]
-        currentPos = self.app.idealArm.getTool(self.ang)
-        self.steps = linspace(currentPos,corner,15)[:,:-1]
-        for stepCount,step in enumerate(self.steps[:-1]):
+        self.syncArm()       
+        currentPos = self.app.idealArm.getTool(self.moveArm.angles)
+        self.steps = linspace(currentPos,self.pos,5)[:,:-1]
+        for stepCount,step in enumerate(self.steps):
             progress('Step #%d, %s' % (stepCount,str(step)))
-            self.app.currStep = stepCount + 1
-            Jt = self.app.idealArm.getToolJac(self.ang)     #takes in angle as radian
-            d = self.steps[stepCount+1] - step     #distance betwen current position and next position
-            
-            angDiff = dot(pinv(Jt)[:,:len(d)],d)
-            progress('Angle Diff 1: %s'% str(angDiff*180/3.14159))    #show angle diff in degrees
-            for i,angle in enumerate(angDiff):
-                progress('its happening')
-                print(angle)
-                if angle > 3.1415 :
-                    print('angDiff1: ', angDiff[i])
-                    angDiff[i] = angDiff[i] - 2*3.1415 
-                    print('angDiff2: ', angDiff[i])
-                elif angle < -3.1415:
-                    print('angDiff1: ', angDiff[i])
-                    angDiff[i] = angDiff[i] + 2*3.1415 
-                    print('angDiff2: ', angDiff[i])
-            progress('Angle Diff 2: %s'% str(angDiff*180/3.14159))    #show angle diff in degrees
-            self.ang += angDiff
+            self.app.currStep = stepCount
+            self.moveArm.ee = step
             for i,motor in enumerate(self.app.arm):
-                motor.set_pos(self.ang[i]*18000./3.14159)    #feed in angle to set_pos as centidegrees
-#           
-#            progress('Step #%d, %s' % (stepCount,str(step)))
-#            progress('Distance %s' % (str(d)))
-#            progress('Angle Diff: %s'% str(angDiff*180/3.14159))    #show angle diff in degrees
-#            progress('Angles: %s'% str(self.ang*180/3.14159))       #show angles in degrees
-            yield self.forDuration(7)
+                motor.set_pos(rad2deg(self.moveArm.angles[i]+angOffset[i])*100)    #feed in angle to set_pos as centidegrees
+            yield self.forDuration(3)
         progress('Move complete')
-        
