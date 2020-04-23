@@ -6,7 +6,6 @@ Created on Tue Apr 21 16:51:34 2020
 @author: osboxes
 """
 
-#move2
 import tinyik
 from joy.plans import Plan
 from joy import progress
@@ -30,10 +29,10 @@ class Move( Plan ):
         self.moveArm.angles = self.app.armSpec[-1,:]
         self.pos = []
         self.calibrated = False
-        self.prev_pos = []
         self.CalDone = False
         self.square = False
         self.currentPos = []
+        self.curr = 0
     #used to get initial joint angles before autonomous move
     def syncArm(self):
         ang = zeros(len(self.app.arm))
@@ -53,7 +52,6 @@ class Move( Plan ):
         self.syncArm()     
         if self.CalDone == False or self.square == False:
             self.currentPos = self.app.idealArm.getTool(self.moveArm.angles)
-        
         self.steps = linspace(self.currentPos,self.pos,5)[:,:-1]
         for stepCount,step in enumerate(self.steps):
             progress('Step #%d, %s' % (stepCount,str(step)))
@@ -62,8 +60,4 @@ class Move( Plan ):
             for i,motor in enumerate(self.app.arm):
                 motor.set_pos(rad2deg(self.moveArm.angles[i]+angOffset[i])*100)    #feed in angle to set_pos as centidegrees
             yield self.forDuration(4)
-        progress('Move complete')
-        
-        
-        
-        
+        progress('Move complete')       

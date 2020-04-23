@@ -12,7 +12,7 @@ import os
 if 'pyckbot/hrb/' not in sys.path:
     sys.path.append(os.path.expanduser('~/pyckbot/hrb/'))
 
-from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_,save,load
+from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_,save,load,array
 from numpy.linalg import inv 
 from p2sim import ArmAnimatorApp
 from arm import Arm
@@ -21,12 +21,12 @@ from joy import progress
 from move import Move
 
 class MyArmSim(ArmAnimatorApp):
-    def __init__(self,Tp2ws,**kw):
+    def __init__(self,Tp2ws,x,y,s,**kw):
       ###
       ### Student team selection -- transform from workspace coordinates to world
       ###
       Tws2w = asarray([
-           [1,0,0, -6],
+           [1,0,0,  0],
            [0,1,0, -5],
            [0,0,1,-10],
            [0,0,0,  1]
@@ -35,17 +35,10 @@ class MyArmSim(ArmAnimatorApp):
       ### Arm specification
       ###
       armSpec = asarray([
-        [0,0.02,1,3,-pi],
-        [0,1,0,4,1.57],
+        [0,0.02,1,5,0],
+        [0,1,0,5,1.57],
         [0,1,0,5,0],
       ]).T
-
-      #arm he gave that removes pendulum motion
-#      armSpec = asarray([
-#        [0, 1,0, 3, 1.57],
-#        [0, 1,0, 3, 0],
-#        [0, 1,0, 3, 0],
-#      ]).T
       self.armSpec = armSpec
       ArmAnimatorApp.__init__(self,armSpec,Tws2w,Tp2ws,
         simTimeStep=0.25, # Real time that corresponds to simulation time of 0.1 sec
@@ -79,7 +72,7 @@ class MyArmSim(ArmAnimatorApp):
       #Get center of square in paper coordinates and convert to world coordinates
       #(x,y,s) - x target, y target, scale
       
-      x,y,s = [5,5,2]    #Prof will give this to us
+#      x,y,s = [3,4,2]    #Prof will give this to us
       #Define 4 corners in paper coordinates
       square_p = asarray([
                   [x-0.5*s, y+0.5*s, 0, 1],     #upper left
@@ -97,9 +90,9 @@ class MyArmSim(ArmAnimatorApp):
       #also set calibrated == true so that it calculates offset
             #Create calibration grid on paper
       nx,ny = (2,2)
-      x = linspace(0,8,nx)
-      y = linspace(0,11,ny)
-      xv,yv = meshgrid(x,y,indexing='xy')
+      x_lin = linspace(0,8,nx)
+      y_lin = linspace(0,11,ny)
+      xv,yv = meshgrid(x_lin,y_lin,indexing='xy')
       grid = c_[xv.reshape(nx*ny,1), yv.reshape(nx*ny,1), zeros((nx*ny,1)), ones((nx*ny,1))]
       grid_idx = list(range(nx*ny))
       for i in range(nx-(nx % 2)):
@@ -143,7 +136,6 @@ class MyArmSim(ArmAnimatorApp):
               progress('Move plan started!')
               return
           if evt.key == K_k:
-              self.move.prev_pos = self.move.pos
               self.move.pos = self.calib_grid[self.calib_idx]
               self.move.start()
               progress('Moving to calibration point')
@@ -181,18 +173,83 @@ class MyArmSim(ArmAnimatorApp):
             return
       return ArmAnimatorApp.onEvent(self,evt)
 
-if __name__=="__main__":
-  # Transform of paper coordinates to workspace
-  Tp2ws = asarray([
-       [0.7071,0,-0.7071,0],
-       [0,     1,      0,0],
-       [0.7071,0, 0.7071,0],
-       [0,     0,      0,1]
-  ])
-  app = MyArmSim(Tp2ws,
-     ## Uncomment the next line (cfg=...) to save video frames;
-     ## you can use the frameViewer.py program to view those
-     ## frames in real time (they will not display locally)
-     # cfg=dict(logVideo="f%04d.png")
-    )
-  app.run()
+
+if __name__=="__main__": 
+    # Transform of paper coordinates to workspace
+    #seed 0
+    Tp2ws=array([[  0.71,   0.  ,   0.71,   5.4 ],
+       [ -0.71,   0.  ,   0.71,  11.14],
+       [  0.  ,  -1.  ,   0.  ,  11.85],
+       [  0.  ,   0.  ,   0.  ,   1.  ]])
+    x,y,s = 4,4,2
+    
+#    #seed 1
+#    Tp2ws=array([[  0.82,   0.  ,   0.58,   5.11],
+#           [ -0.41,   0.71,   0.58,   3.59],
+#           [ -0.41,  -0.71,   0.58,  12.  ],
+#           [  0.  ,   0.  ,   0.  ,   1.  ]])
+#    x,y,s = 3,5,1
+    
+#    #seed 2
+#    Tp2ws=array([[  0.  ,  -1.  ,   0.  ,  11.93],
+#           [  1.  ,   0.  ,   0.  ,   3.79],
+#           [  0.  ,   0.  ,   1.  ,   6.02],
+#           [  0.  ,   0.  ,   0.  ,   1.  ]])
+#    x,y,s = 2,7,2
+#    
+#    #seed 3
+#    Tp2ws=array([[  0.  ,  -1.  ,   0.  ,  11.84],
+#           [  0.71,   0.  ,   0.71,   1.01],
+#           [ -0.71,   0.  ,   0.71,   9.39],
+#           [  0.  ,   0.  ,   0.  ,   1.  ]])
+#    x,y,s = 2,2,2
+#    
+#    #seed 4
+#    Tp2ws=array([[  1.  ,   0.  ,   0.  ,   0.69],
+#           [  0.  ,   0.71,   0.71,   3.65],
+#           [  0.  ,  -0.71,   0.71,  10.46],
+#           [  0.  ,   0.  ,   0.  ,   1.  ]])
+#    x,y,s = 3,4,2
+#    
+#    #seed 5
+#    Tp2ws=array([[  0.  ,  -0.71,   0.71,  11.33],
+#           [  1.  ,   0.  ,   0.  ,   1.45],
+#           [  0.  ,   0.71,   0.71,   4.14],
+#           [  0.  ,   0.  ,   0.  ,   1.  ]])
+#    x,y,s = 3,4,1
+#    
+#    #seed 6
+#    Tp2ws=array([[ 1.  ,  0.  ,  0.  ,  0.84],
+#           [ 0.  ,  0.71,  0.71,  0.53],
+#           [ 0.  , -0.71,  0.71,  9.51],
+#           [ 0.  ,  0.  ,  0.  ,  1.  ]])
+#    x,y,s = 3,6,3
+#    
+#    #seed 7
+#    Tp2ws=array([[  0.71,   0.  ,   0.71,   2.94],
+#           [ -0.71,   0.  ,   0.71,  10.32],
+#           [  0.  ,  -1.  ,   0.  ,  11.98],
+#           [  0.  ,   0.  ,   0.  ,   1.  ]])
+#    x,y,s = 4,3,2
+#        
+#    #seed 8
+#    Tp2ws=array([[ 0.  , -0.71,  0.71,  9.  ],
+#           [ 1.  ,  0.  ,  0.  ,  1.51],
+#           [ 0.  ,  0.71,  0.71,  3.5 ],
+#           [ 0.  ,  0.  ,  0.  ,  1.  ]])
+#    x,y,s = 4,7,2
+#    
+#    #seed 9
+#    Tp2ws=array([[  0.71,   0.  ,   0.71,   3.28],
+#           [ -0.71,   0.  ,   0.71,   6.75],
+#           [  0.  ,  -1.  ,   0.  ,  11.14],
+#           [  0.  ,   0.  ,   0.  ,   1.  ]])
+#    x,y,s = 4,3,1
+    
+    app = MyArmSim(Tp2ws,x,y,s
+                   ## Uncomment the next line (cfg=...) to save video frames;
+                   ## you can use the frameViewer.py program to view those
+                   ## frames in real time (they will not display locally)
+                   #      cfg=dict(logVideo="f%04d.png")
+                   )
+    app.run()
