@@ -19,7 +19,7 @@ What you should see when graphics appear:
 -4 purple dots at the corners of the paper. These are the calibration points.
 
 Current robot arm configuration is 3 motors with 3 arm segments. First motor is located at base of arm,
-which is also the origin of the workspace, and is marked by a gray triangle. 
+which is also the world origin, and is marked by a gray triangle. 
 Rotation axes for each motor are the following:
 Motor 1: z, Motor 2: y, Motor 3: y
 

@@ -6,7 +6,8 @@ myarmsim.py
 
 Creates the robot arm, which is an instance of the ArmAnimatorApp class and has all the unideal motor and arm properties,
 such as pen lag and gravity sag. This script defines the number of arm segments and orientation of the arm joints/motors.
-This script also defines the placement of the arm in the workspace. 
+This script also defines the placement of the workspace relative to the arm, whose base is at the world origin, within
+the matrix that transforms from workspace to world coordinates.
 
 This script also defines the placement of the paper in the workspace and the placement and size of the square on the paper.
 Finally, this script provides the user interface for executing calibration and autonomous mode.

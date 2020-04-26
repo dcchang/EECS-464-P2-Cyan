@@ -54,11 +54,12 @@ class MyArmSim(ArmAnimatorApp):
       ###
       
       #first three columns represent axis. Last column represents
-      #translation. Adjust last column to adjust arm base placement.
+      #translation. Adjust last column to adjust workspace placement relative to arm.
+      #Base of arm is always at world origin 
       Tws2w = asarray([
-           [1,0,0,  0],     #placement of arm along x axis
-           [0,1,0, -5],     #placement of arm along y axis
-           [0,0,1,-10],     #placement of arm along z axis
+           [1,0,0,  0],     #placement of workspace along x axis
+           [0,1,0, -5],     #placement of workspace along y axis
+           [0,0,1,-10],     #placement of workspace along z axis
            [0,0,0,  1]
       ])
       ###
