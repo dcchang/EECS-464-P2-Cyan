@@ -1,0 +1,64 @@
+EECS 464: Hands-On Robotics 2020 Project 2 Cyan Team - USAGE
+
+High level steps to follow:
+-Open one terminal window
+-In the terminal window run command: cd ~/p2
+-In the terminal window run command: export PYGIXSCHD=pygame
+-Run command: python myarmsim.py
+-A pygame window will open. It will first appear black and may take a few seconds for graphics to appear (see below)
+-Click on the pygame window
+-Run calibration (see below)
+-Run autonomous mode (see below)
+-Press 'q' to save your results (see below) and quit program 
+-Press ctrl+C in terminal to quit program without saving
+
+What you should see when graphics appear:
+-4 3D graphs showing different views of your arm (in gray) in the 3D workspace.
+-A green rectangular prism within the workspace. This is the piece of paper.
+-4 red dots on the surface of the paper, which represent the corners of a square.
+-4 purple dots at the corners of the paper. These are the calibration points.
+
+Current robot arm configuration is 3 motors with 3 arm segments. First motor is located at base of arm,
+which is also the origin of the workspace, and is marked by a gray triangle. 
+Rotation axes for each motor are the following:
+Motor 1: z, Motor 2: y, Motor 3: y
+
+Robot arm controls:
+Make sure you have clicked on the pygame window before pressing any keys. Do not enter key preses in terminal.
+
+Manual control:
+Terminal message "manual move" will appear when moving robot arm manually.
+-To increment each motor, press 'a','s',or 'd'. Each corresponds to each additional motor starting with the base motor.
+-To decrement each motor, press 'z','x',or 'c'. Each corresponds to each additional motor starting with the base motor.
+
+Calibration:
+-Press 'k' to begin. The terminal message "Moving to calibration point" will appear and the robot arm will attempt
+ to move to first calibration point.
+-Once the arm has reached the point, the terminal message "Move complete" will appear.
+-Manually move the end effector to the correct calibration point using manual control.
+-Press 'o' to calculate error.
+-Repeat previous steps, pressing 'k' again to move to next calibration point. Once you have done this process for 
+every point, you will get the terminal message "Calibration complete!"
+
+Autonomous mode:
+This is where the arm will try to draw the edges of the square connecting the 4 corners.
+-Press 'w','e','r','t' to move to each corner of the square. 
+
+-'w': upper left corner
+-'e': upper right corner
+-'r': bottom right corner
+-'t': bottom left corner
+
+-To draw a complete square, you should press keys in order specified above and lastly repeat the first key press.
+So do the following: 'w','e','r','t','w'.
+-You can press keys in alternate orders, so long as you make sure to move between 
+adjacent corners to draw the square edges. For example: 't','r','e','w','t' will also draw a square.
+
+When each key is pressed and autonomy is started, terminal message "Move plan started!" will appear.
+When the arm has finished moving to the desired corner, the terminal message "Move complete" will appear.
+Wait till both these messages have popped up before pressing a different key to move to the next corner.
+
+Results:
+A csv file and png file will pop up in your directory.
+-The csv file contains the x,y,z locations of the pen over time during the run.
+-The png file shows the pen's drawing performance on the paper.

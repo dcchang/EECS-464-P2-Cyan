@@ -1,0 +1,29 @@
+EECS 464: Hands-On Robotics 2020 Project 2 Green Team - OVERVIEW
+
+The src folder contains the following source files:
+
+myarmsim.py
+
+Creates the robot arm, which is an instance of the ArmAnimatorApp class and has all the unideal motor and arm properties,
+such as pen lag and gravity sag. This script defines the number of arm segments and orientation of the arm joints/motors.
+This script also defines the placement of the arm in the workspace. 
+
+This script also defines the placement of the paper in the workspace and the placement and size of the square on the paper.
+Finally, this script provides the user interface for executing calibration and autonomous mode.
+
+move.py
+
+This is the move plan, which is executed during calibration and autonomous mode. This script uses forward kinematics 
+to estimate your current pen location and then creates a path of points between your current pen 
+location (x,y,z) and the location (x,y,z) you want the pen to go to. It uses inverse kinematics to estimate 
+the angles required for the joints to move the pen to each point. It then moves the motors by those angles to take
+each step towards the goal location.
+
+How the files relate:
+myarmsim.py calls move.py during calibration and autonomous mode when triggered by user key presses.        
+
+General Theory:
+These scripts simulate a serial manipulator robot that is composed of a series of arm segments and joints with a
+pen as the end effector. Together, they use forward and inverse kinematics to estimate end effector positions
+and joint angles, and this information is used together to autonomously move the pen and draw a square on the paper.
+Calibration can also be done to determine an angle offset to add when feeding angles to move the motors.

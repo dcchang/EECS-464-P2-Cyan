@@ -1,0 +1,9 @@
+EECS 464: Hands-On Robotics 2020 Project 2 Cyan Team - COPYRIGHT
+
+Documents and resources created by:
+
+Vaibhav Bafna		-vbafna@umich.edu
+David Chang		-dcchang@umich.edu
+Eric Wiener		-ecwiener@umich.edu
+
+These documents may be used for education/teaching with unrestricted access.

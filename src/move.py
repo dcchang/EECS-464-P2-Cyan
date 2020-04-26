@@ -6,11 +6,29 @@ Created on Tue Apr 21 16:51:34 2020
 @author: osboxes
 """
 
+"""
+Modified on Wed Apr 22 2020
+
+@authors:
+Vaibhav Bafna	-vbafna@umich.edu
+David Chang		-dcchang@umich.edu
+Eric Wiener		-ecwiener@umich.edu
+
+Description:
+    Move plan, which is executed during calibration and autonomous mode.   
+    Autonomously moves robot end effector from current location to a single
+    desired location. Breaks up path in between into series of steps for robot arm to move to.
+    Uses forward kinematics to estimate current pen location and inverse 
+    kinematics to estimate the angles required for the joints to move pen 
+    to each point.
+    
+    Uses tinyik for inverse kinematics. See INSTALL.txt for installation instructions.
+"""
+
 import tinyik
 from joy.plans import Plan
 from joy import progress
-from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_
-from numpy.linalg import pinv,inv
+from numpy import linspace,zeros,pi,rad2deg
 from scipy.interpolate import griddata
 
 #armSpec = asarray([
@@ -23,11 +41,12 @@ class Move( Plan ):
     def __init__(self,app,*arg,**kw):
         Plan.__init__(self,app,*arg,**kw)
         self.app = app
-        #Initial angles for each motor of real arm
         self.steps = []
+        #Make another arm with the same orientation and arm lenght segments as
+        #what is defined in armSpec. This is what is used for inverse kinematics.
         self.moveArm = tinyik.Actuator(['z',[5.,0.,0.],'y',[5.,0.,0.],'y',[5.,0.,0.]])
         self.moveArm.angles = self.app.armSpec[-1,:]
-        self.pos = []
+        self.pos = []   #Goal position for move. Will either be grid point or square corner. 
         self.calibrated = False
         self.CalDone = False
         self.square = False
@@ -37,7 +56,7 @@ class Move( Plan ):
     def syncArm(self):
         ang = zeros(len(self.app.arm))
         for i,motor in enumerate(self.app.arm):
-            ang[i] = motor.get_goal()*(3.14159/18000.)   #convert angles to radians
+            ang[i] = motor.get_goal()*(pi/18000.)   #convert angles from centidegrees to radians
         self.moveArm.angles = ang
     
     #for moving towwards desired position
@@ -51,13 +70,17 @@ class Move( Plan ):
 
         self.syncArm()     
         if self.CalDone == False or self.square == False:
-            self.currentPos = self.app.idealArm.getTool(self.moveArm.angles)
-        self.steps = linspace(self.currentPos,self.pos,5)[:,:-1]
+            #forward kinematics - get current end effector position given joint angles
+            self.currentPos = self.app.idealArm.getTool(self.moveArm.angles)        
+        #Create a number of evenly spaced steps between current position and goal position
+        self.steps = linspace(self.currentPos,self.pos,5)[:,:-1]    #Can adjust number of steps.
+        #execute movement along path of steps
         for stepCount,step in enumerate(self.steps):
             progress('Step #%d, %s' % (stepCount,str(step)))
             self.app.currStep = stepCount
             self.moveArm.ee = step
             for i,motor in enumerate(self.app.arm):
+                #Calculate angles to move each step and move the motors 
                 motor.set_pos(rad2deg(self.moveArm.angles[i]+angOffset[i])*100)    #feed in angle to set_pos as centidegrees
             yield self.forDuration(4)
         progress('Move complete')       

@@ -6,14 +6,41 @@ Created on Wed Apr  1 14:23:10 2020
 @author: shrevzen
 """
 
+"""
+Modified on Wed Apr 22 2020
+
+@authors:
+Vaibhav Bafna	-vbafna@umich.edu
+David Chang		-dcchang@umich.edu
+Eric Wiener		-ecwiener@umich.edu
+
+Description:
+    Creates the robot arm, and places the arm in the workspace. Modify the arm
+    placement by adjusting Tws2w. Change arm joint rotation axes, arm lengths 
+    and initial angles by adjusting armSpec. 
+    
+    Test the arm on different papers and square placements by commenting out
+    different seeds located in "main" body of script.
+    
+    User control of robot:
+    Manually control robot using keys 'a','s','d' to increment and 'z','x','c' to
+    decrement. 
+    
+    Run calibration by pressing keys 'k' and 'o'. Please see USAGE.txt for further
+    instructions.
+    
+    Run autonomous mode by pressing keys 'w','e','r','t'. Please see USAGE.txt
+    for further instructions. 
+"""
+
+
 #Added so you can run script from anywhere
 import sys
 import os
 if 'pyckbot/hrb/' not in sys.path:
     sys.path.append(os.path.expanduser('~/pyckbot/hrb/'))
 
-from numpy import linspace,dot,zeros,pi,rad2deg,asarray,meshgrid,ones,c_,save,load,array
-from numpy.linalg import inv 
+from numpy import linspace,dot,zeros,pi,asarray,meshgrid,ones,c_,save,load,array
 from p2sim import ArmAnimatorApp
 from arm import Arm
 from joy.decl import KEYDOWN,K_k,K_o
@@ -25,15 +52,22 @@ class MyArmSim(ArmAnimatorApp):
       ###
       ### Student team selection -- transform from workspace coordinates to world
       ###
+      
+      #first three columns represent axis. Last column represents
+      #translation. Adjust last column to adjust arm base placement.
       Tws2w = asarray([
-           [1,0,0,  0],
-           [0,1,0, -5],
-           [0,0,1,-10],
+           [1,0,0,  0],     #placement of arm along x axis
+           [0,1,0, -5],     #placement of arm along y axis
+           [0,0,1,-10],     #placement of arm along z axis
            [0,0,0,  1]
       ])
       ###
       ### Arm specification
       ###
+      
+      #Each row represents an arm segment.
+      #First three columns represent joint rotation axis. Fourth column represents
+      #arm segment length. Last column represents initial arm segment angle.
       armSpec = asarray([
         [0,0.02,1,5,0],
         [0,1,0,5,1.57],
@@ -49,15 +83,18 @@ class MyArmSim(ArmAnimatorApp):
      
     def show(self,fvp):
       fvp.plot3D([0],[0],[0],'^k',ms=10) # Plot black triangle at origin
+      
+      #plot square corners on paper in red
       for point in self.square_w:
           fvp.plot3D(*point[:-1],marker='o',color='r')
-
+      
+      #plot steps robot arm will take from current position to next corner/calibration point in green
       for i,point in enumerate(self.move.steps):
           if self.currStep and self.currStep == i:
-            fvp.plot3D(*point,marker='o',color='b')
+            fvp.plot3D(*point,marker='o',color='b')     #dot that robot is currently trying to move to is blue
           else:
             fvp.plot3D(*point,marker='o',color='g')
-     
+      #plot calibration grid points in magenta
       for point in self.calib_grid:
           fvp.plot3D(*point[:-1],marker='o',color='m')
       return ArmAnimatorApp.show(self,fvp)
@@ -69,10 +106,6 @@ class MyArmSim(ArmAnimatorApp):
       ### TEAM CODE GOES HERE
       ###
 
-      #Get center of square in paper coordinates and convert to world coordinates
-      #(x,y,s) - x target, y target, scale
-      
-#      x,y,s = [3,4,2]    #Prof will give this to us
       #Define 4 corners in paper coordinates
       square_p = asarray([
                   [x-0.5*s, y+0.5*s, 0, 1],     #upper left
@@ -86,10 +119,8 @@ class MyArmSim(ArmAnimatorApp):
       
       ##Calibration
       
-      #if calibration file exists, load calibration array in here, and skip over next part
-      #also set calibrated == true so that it calculates offset
-            #Create calibration grid on paper
-      nx,ny = (2,2)
+      #Create calibration grid on paper. These are points to move to during calibration.
+      nx,ny = (2,2)     #can be adjusted to add more calibration points
       x_lin = linspace(0,8,nx)
       y_lin = linspace(0,11,ny)
       xv,yv = meshgrid(x_lin,y_lin,indexing='xy')
@@ -102,26 +133,31 @@ class MyArmSim(ArmAnimatorApp):
       self.calib_grid = dot(grid,self.Tp2w.T)
       self.calib_idx = 0
       
-      
+      #if calibration file exists, load calibration array in here, and skip over next part
+      #also set calibrated == true so that it calculates offset
+      #manually delete existing calibration array file before moving on to new arena
       if(os.path.exists("calib_array.npy")):
           self.calib_ang = load("calib_array.npy")
           print(type(self.calib_ang))
           self.move.calibrated = True
           print(self.calib_ang[:,:-1])
-        #manual calibration matrix
+        
+     #printout of calibration matrix
 #      self.calib_ang = [[-1.54566359  0.00872665 -0.03543018]
 #                         [ 0.74228853  0.511556   -2.08479579]
 #                         [ 2.45148947 -0.61191244  2.08584299]
 #                         [-0.80826198  0.66479591 -2.20469991]]
       
       else:
-          self.calib_ang = zeros((nx*ny,len(self.arm)))      #This is the matrix you will want to save
+          #This is the matrix you save your angles in and use to calculate angle offset
+          self.calib_ang = zeros((nx*ny,len(self.arm)))    
 
     def onEvent(self,evt):
       ###
       ### TEAM CODE GOES HERE
       ###    Handle events as you see fit, and return after
-
+      
+      #activate autonomous mode and move to a square corner by pressing 'w','e','r','t'
       if evt.type == KEYDOWN:
           progress('in keydown')
           p = "wert".find(evt.unicode)
@@ -129,19 +165,22 @@ class MyArmSim(ArmAnimatorApp):
               if self.move.isRunning():
                   progress('Move running!')
                   return
-              self.move.pos = self.square_w[p]
+              self.move.pos = self.square_w[p]   #set square corner as goal position
               self.move.start()
               self.move.square = True
+              #after each move, set the previous goal position as your new starting position
               self.move.currentPos = self.move.pos
               progress('Move plan started!')
               return
+          #Press 'k' to move to grid point for calibration
           if evt.key == K_k:
-              self.move.pos = self.calib_grid[self.calib_idx]
+              self.move.pos = self.calib_grid[self.calib_idx]    #set next grid point as goal position
               self.move.start()
               progress('Moving to calibration point')
               for i,motor in enumerate(self.arm):
-                  self.calib_ang[self.calib_idx,i] = motor.get_goal()*(pi/18000)
+                  self.calib_ang[self.calib_idx,i] = motor.get_goal()*(pi/18000) #convert angles from centidegrees to radians
         #Manual adjustment before this step  
+          #Press 'o' to calculate error between where arm moved and where it was supposed to be
           if evt.key == K_o:
               #Calculate error
               progress('Calculate error')
@@ -157,15 +196,16 @@ class MyArmSim(ArmAnimatorApp):
               if self.calib_idx == len(self.calib_ang):
                   progress('Calibration_complete!')
                   self.move.calibrated = True
-                  save("calib_array.npy",self.calib_ang)
+                  save("calib_array.npy",self.calib_ang)    #save calibration array
                   return
           #manual movements
+          # row of 'a' on QWERTY keyboard increments motors
           p = "asdf".find(evt.unicode)
           if p>=0:
             progress('manual move')
             self.arm[p].set_pos(self.arm[p].get_goal() + 300)
             return
-            # row of 'z' in QWERTY keyboard decrements motors
+          # row of 'z' in QWERTY keyboard decrements motors
           p = "zxcv".find(evt.unicode)
           if p>=0:
             progress('manual move')
@@ -181,7 +221,7 @@ if __name__=="__main__":
        [ -0.71,   0.  ,   0.71,  11.14],
        [  0.  ,  -1.  ,   0.  ,  11.85],
        [  0.  ,   0.  ,   0.  ,   1.  ]])
-    x,y,s = 4,4,2
+    x,y,s = 4,4,2       #(x,y,s) - x target, y target, scale for square
     
 #    #seed 1
 #    Tp2ws=array([[  0.82,   0.  ,   0.58,   5.11],

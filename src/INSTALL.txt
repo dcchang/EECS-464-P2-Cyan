@@ -1,0 +1,7 @@
+EECS 464: Hands-On Robotics 2020 Project 2 Cyan Team - INSTALL
+
+This code uses the library tinyik - a simple and naive inverse kinematics solver.
+
+To install tinyik, run command in terminal: pip install tinyik
+
+For complete documentation, visit Github repository: https://github.com/lanius/tinyik
