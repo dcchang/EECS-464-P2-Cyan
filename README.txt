@@ -1,4 +1,5 @@
 EECS 464: Hands-On Robotics 2020 Project 2 Cyan Team - README
+Date: April 2020
 
 Vaibhav Bafna		-vbafna@umich.edu
 David Chang		-dcchang@umich.edu
