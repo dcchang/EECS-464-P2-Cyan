@@ -21,7 +21,7 @@ COPYRIGHT.txt
 2020-P2-cyan-brainstorming.pdf
 - brainstorming presentation in PDF format
 
-howto
+2020-P2-cyan-howto.pdf
 - Documentation on computational approach in PDF format
 
 src (folder for source code):
@@ -30,3 +30,4 @@ src (folder for source code):
 - INSTALL.txt: Instructions for installing external libraries required.
 - myarmsim.py: Script that user will run in terminal.
 - move.py: Script that myarmsim.py uses for autonomous mode.
+- move_old.py: Deprecated version of move.py.
